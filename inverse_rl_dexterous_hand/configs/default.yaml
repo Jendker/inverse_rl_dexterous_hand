@@ -1,0 +1,38 @@
+algorithm: DAPG
+env: relocate
+policy_size: [32, 32]
+value_function:
+  epochs: 2
+  batch_size: 64
+  lr: 1e-3
+BC:
+  demo_file: default
+  epochs: 5
+  batch_size: 32
+  lr: 1e-3
+# RL agent
+RL:
+  step_size: 0.1
+  lam_0: 1e-2
+  lam_1: 0.99
+# train agent
+train:
+  steps: 100
+  gamma: 0.995
+  gae_lambda: 0.97
+  num_traj: 200
+  save_freq: 15
+  augmentation: 0  # augmentation of all sampled paths times value
+  entropy_weight: 0
+  use_timestamp: False
+# other
+prefix: ''
+seed: 100
+runs: [1, 11]
+num_cpu: 4
+eval_rollouts: 20
+fixed_evaluation_init_states: False
+use_DAPG: True
+plot_keys: ['eval_score', 'success_rate']
+save_logs: True
+env_kwargs: {}

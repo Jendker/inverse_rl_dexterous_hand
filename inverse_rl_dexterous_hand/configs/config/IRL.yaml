@@ -1,0 +1,63 @@
+algorithm: IRL
+use_DAPG: False
+plot_keys: ['OriginalTaskAverageReturn', 'success_rate', 'stoc_pol_mean']
+
+train:
+  steps: 200
+
+IRL:
+  generator_alg: DAPG
+  algorithm: AIRL
+  discr:
+    arch_args: {'d_hidden': 64}
+    score_discrim: false
+    batch_size: 256
+    state_only: true
+    lr: 1e-3
+    lower_lr_on_main_loop_percentage: null  # given as array of percentages at which lr should be lowered by 0.1
+    initialisation_value: 0
+  max_itrs: 30
+  buffer: null
+  max_gen_updates: 4
+  steps_till_max_gen_updates: 150
+
+  entropy_weight: 0
+
+  temperature_min: 0.05
+  temperature_max: 0.0
+
+  normalization_lr: 0
+
+  initialization_job: ''
+
+  # augmentation
+  augmentation:
+    samples: 0
+    expert: 0
+    lower_sample_augmentation_count: False
+
+  # feature selection
+  visible_indices: ''
+  append_predefined_visible_indices: False
+  PCA:
+    components: null
+    scaling: False
+  mitra_k: null
+
+  dump_paths_percentage: null
+
+  noise_samples_generator_args:
+    samples_percent: 0
+    range_coefficient: null
+    remember_only_current_min_max: True
+    fixed_symmetric_bound: null
+    fixed_upper_bound: null
+    fixed_lower_bound: null
+
+  adversarial_samples:
+    percentage: 0
+    range: 0.2
+    alpha_ratio: 0.5
+
+  use_timestamp: False
+  prefix: ''

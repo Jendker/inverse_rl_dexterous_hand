@@ -1,0 +1,7 @@
+algorithm: DAPG_based_IRL
+env: IRL_relocate-v0
+based_IRL:
+  IRL_job: null
+  IRL_run_no: null
+  IRL_step: null
+  IRL_config: null

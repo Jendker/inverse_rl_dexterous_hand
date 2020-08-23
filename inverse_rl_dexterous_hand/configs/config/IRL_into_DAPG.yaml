@@ -1,0 +1,8 @@
+algorithm: IRL+DAPG
+based_IRL:
+  IRL_job: null
+  IRL_run_no: null
+  IRL_step: 90
+  IRL_config: null
+train:
+  steps: 200
