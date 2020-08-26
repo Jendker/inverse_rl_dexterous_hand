@@ -41,7 +41,7 @@ def parse_task(cfg):
     env_name = cfg['env'] + '-v0'
     if cfg['env'] == 'pen':
         cfg['BC']['epochs'] = 1
-    if 'IRL' in cfg and cfg['IRL']['visible_indices'] is not None:
+    if 'IRL' in cfg and  'visible_indices' in cfg['IRL'] and cfg['IRL']['visible_indices'] is not None:
         if cfg['env'] == 'relocate':
             cfg['IRL']['visible_indices'] = 'slice(-9,None)'
         if cfg['env'] == 'hammer':
@@ -49,6 +49,7 @@ def parse_task(cfg):
         if cfg['env'] == 'pen':
             cfg['IRL']['visible_indices'] = 'slice(-21,None)'
     if 'IRL' in cfg and 'noise_samples' in cfg['IRL'] and cfg['IRL']['noise_samples']:
+        cfg['IRL']['noise_samples_generator_args'] = {}
         cfg['IRL']['noise_samples_generator_args']['samples_percent'] = 20
         cfg['IRL']['noise_samples_generator_args']['std_dev_coefficient'] = 1
 

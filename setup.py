@@ -11,7 +11,7 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     packages=setuptools.find_packages(),
     install_requires=[
-        'tensorflow',
+        'tensorflow-cpu',
         'torch<1.6.0',
         'gym',
         'mujoco-py<2.1,>=2.0',
