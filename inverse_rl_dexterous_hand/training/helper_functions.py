@@ -48,6 +48,8 @@ def parse_task(cfg):
             cfg['IRL']['visible_indices'] = 'slice(-19,None)'
         if cfg['env'] == 'pen':
             cfg['IRL']['visible_indices'] = 'slice(-21,None)'
+        if cfg['env'] == 'door':
+            cfg['IRL']['visible_indices'] = 'slice(-12,None)'
     if 'IRL' in cfg and 'noise_samples' in cfg['IRL'] and cfg['IRL']['noise_samples']:
         cfg['IRL']['noise_samples_generator_args'] = {}
         cfg['IRL']['noise_samples_generator_args']['samples_percent'] = 20
