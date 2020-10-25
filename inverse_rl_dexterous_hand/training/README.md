@@ -26,7 +26,7 @@ For our method with noise samples:
 Provide beta parameter as `IRL.normalization_lr`.  
 
 Example:  
-`python training.py env <env> IRL.noise_samples True IRL.normalization_lr 0.001 --configs IRL`
+`python training.py env <env> IRL.visible_indices Null IRL.normalization_lr 0.001 --configs IRL`
 
 
 #### Fig. 5:
