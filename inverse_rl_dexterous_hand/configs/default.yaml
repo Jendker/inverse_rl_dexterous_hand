@@ -30,6 +30,7 @@ prefix: ''
 seed: 100
 runs: [1, 11]
 num_cpu: 4
+num_demo: 50
 eval_rollouts: 20
 fixed_evaluation_init_states: False
 use_DAPG: True

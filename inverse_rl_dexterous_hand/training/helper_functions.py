@@ -57,7 +57,7 @@ def parse_task(cfg):
         cfg['IRL']['noise_samples_generator_args']['std_dev_coefficient'] = 1
 
 
-    cfg['demo_file'] = '../../demonstrations/50_demos_' + cfg['env'] + '-v0.pkl'
+    cfg['demo_file'] = '../../demonstrations/70_demos_' + cfg['env'] + '-v0.pkl'
     # overwrite job_name if it is DAPG_based_IRL
     if cfg['algorithm'] == 'DAPG_based_IRL':
         actual_IRL_job_name = os.path.split(cfg['based_IRL']['IRL_job'])[1]
@@ -150,6 +150,9 @@ def parse_task(cfg):
         if cfg['IRL']['generator_alg'] == 'PPO':
             job_name = 'PPO_' + job_name
 
+    if 'num_demo' in cfg and cfg['num_demo'] != 50:
+        job_name = 'num_demo_' + str(cfg['num_demo']) + '_' + job_name
+
     if cfg['prefix']:
         job_name = cfg['prefix'] + '_' + job_name
 
@@ -238,6 +241,8 @@ def train(cfg, run_no, multiple_runs, seed):
         bc_demo_paths = pickle.load(open(bc_demo_file_path, 'rb'))
     else:
         bc_demo_paths = demo_paths
+    if 'num_demo' in cfg and cfg['num_demo']:
+        demo_paths = demo_paths[:cfg['num_demo']]
     if cfg['algorithm'] == 'DAPG_based_IRL':
         if 'get_paths_for_initialisation' in cfg['based_IRL']:
             if cfg['based_IRL']['get_paths_for_initialisation']:
@@ -248,7 +253,7 @@ def train(cfg, run_no, multiple_runs, seed):
         print("========================================")
         print("Running BC with expert demonstrations")
         print("========================================")
-        bc_agent = BC(bc_demo_paths[25:], policy=policy, epochs=cfg['BC']['epochs'], batch_size=cfg['BC']['batch_size'],
+        bc_agent = BC(bc_demo_paths[:25], policy=policy, epochs=cfg['BC']['epochs'], batch_size=cfg['BC']['batch_size'],
                       lr=cfg['BC']['lr'], loss_type='MSE', set_transforms=True)
 
         bc_agent.train()
