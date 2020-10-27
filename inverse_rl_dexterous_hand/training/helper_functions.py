@@ -12,6 +12,7 @@ from ruamel.yaml import safe_load, dump
 import time as timer
 import pickle
 from inverse_rl_dexterous_hand.inverse_rl.models.airl_state import AIRL
+import tensorflow as tf
 from inverse_rl_dexterous_hand.inverse_rl.models.imitation_learning import GAIL, AIRLStateAction
 from gym import envs
 
@@ -191,16 +192,34 @@ def add_dumped_paths_for_BC(demo_paths, cfg):
     return bc_demo_paths
 
 
+def setup_gpus():
+    gpus = tf.config.experimental.list_physical_devices('GPU')
+    if gpus:
+        # Restrict TensorFlow to only allocate 1GB of memory on the first GPU
+        try:
+            tf.config.experimental.set_virtual_device_configuration(
+                gpus[0],
+                [tf.config.experimental.VirtualDeviceConfiguration(memory_limit=1024)])
+            logical_gpus = tf.config.experimental.list_logical_devices('GPU')
+            print(len(gpus), "Physical GPUs,", len(logical_gpus), "Logical GPUs")
+        except RuntimeError as e:
+            # Virtual devices must be set before GPUs have been initialized
+            print(e)
+    return bool(gpus)
+
+
 def train(cfg, run_no, multiple_runs, seed):
     # ===============================================================================
     # Train Loop
     # ===============================================================================
 
+    gpus_available = setup_gpus()
     env_name, job_name = parse_task(cfg)
     env = GymEnv(env_name, **cfg['env_kwargs'])
     policy = MLP(env.spec, hidden_sizes=tuple(cfg['policy_size']), seed=seed)
     baseline = MLPBaseline(env.spec, reg_coef=1e-3, batch_size=cfg['value_function']['batch_size'],
-                           epochs=cfg['value_function']['epochs'], learn_rate=cfg['value_function']['lr'])
+                           epochs=cfg['value_function']['epochs'], learn_rate=cfg['value_function']['lr'],
+                           use_gpu=False)
 
     # Get demonstration data if necessary and behavior clone
     print("========================================")
