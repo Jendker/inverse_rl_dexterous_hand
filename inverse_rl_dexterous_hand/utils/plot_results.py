@@ -13,8 +13,9 @@ result_paths = [['job_name_1', 'visible name 1'],
 
 category = ''
 fields = ['success_rate']
-print_field = ''
+print_function_field = ''
 print_function = np.max
+print_last_iteration_field = ''
 x_label = 'Iterations'
 y_labels = []  # will be inferred if empty
 legend_title = ''
@@ -223,11 +224,16 @@ def parse_lines(runs_folder):
             else:
                 for run_folder, run_line in zip(run_folders, run_lines):
                     lines[field].append([run_line, legend + '_' + run_folder])
-    if print_field:
+    if print_function_field:
         for pair in result_paths:
-            run_lines, _ = get_lines_for_pair(pair, print_field, runs_folder)
+            run_lines, _ = get_lines_for_pair(pair, print_function_field, runs_folder)
             legend = pair[1]
             print(legend + ':', np.mean(print_function(run_lines, axis=1)))
+    elif print_last_iteration_field:
+        for pair in result_paths:
+            run_lines, _ = get_lines_for_pair(pair, print_last_iteration_field, runs_folder)
+            legend = pair[1]
+            print(legend + ':', np.mean(np.array(run_lines)[:, -1]))
     return lines
 
 
@@ -250,8 +256,10 @@ def main(variables, category_name, name_if_empty, draw_std_dev):
     if x_limit > 0:
         print("Warning: x_limit active, set to:", x_limit)
     assert not(variables and category_name), 'Define either variables or category_name'
-    if print_field is not None:
-        print("Values for field:", print_field, "with function used over line:", print_function.__name__)
+    if print_function_field:
+        print("Values for field:", print_function_field, "with function used over line:", print_function.__name__)
+    elif print_last_iteration_field:
+        print("Mean values of the last iteration for the field:", print_last_iteration_field)
     runs_folder = 'Runs/'
     global category
     if category_name:
