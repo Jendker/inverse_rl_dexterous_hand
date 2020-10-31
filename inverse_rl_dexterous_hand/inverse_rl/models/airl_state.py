@@ -143,7 +143,7 @@ class GeneralizingCheckpoint:
         self.iteration_to_load = 0
         self.iteration_save_freq = None
         self.first_save_iteration = None
-        self.min_loss_considered_still_generalizing = 0.2
+        self.min_loss_considered_still_generalizing = 0.5
         self.min_fitting_steps_to_not_load = 4
         self.last_loaded_generalizing_checkpoint = None
         self.last_loss = 0
@@ -151,14 +151,6 @@ class GeneralizingCheckpoint:
 
     def check_load_generalizing_checkpoint(self, fitting_iteration_number, outer_loop_iteration_number, airl_model):
         if fitting_iteration_number < self.min_fitting_steps_to_not_load:
-            if self.last_loaded_generalizing_checkpoint is not None and self.last_loaded_generalizing_checkpoint >= self.iteration_to_load:
-                if self.iteration_save_freq is None:
-                    print("GeneralizingCheckpoint: Iteration save frequency not known yet. Could not backstep the "
-                          "generalizing checkpoint number")
-                else:
-                    if self.iteration_to_load - self.iteration_save_freq > 0:
-                        self.iteration_to_load -= self.iteration_save_freq
-                        print("GeneralizingCheckpoint: Backstep the generalizing checkpoint number to", str(self.iteration_to_load))
             if self.iteration_path is not None and self.iteration_to_load > 0:
                 airl_model.load_iteration(self.iteration_path, self.iteration_to_load)
                 print('GeneralizingCheckpoint: Reward function does not generalize. Reloading previous generalizing '
@@ -173,7 +165,6 @@ class GeneralizingCheckpoint:
                 self.iteration_save_freq = iteration - self.first_save_iteration
         if self.last_loss >= self.min_loss_considered_still_generalizing:
             self.iteration_to_load = iteration
-        self.last_loss = 0
         if self.iteration_path is None:
             self.iteration_path = os.path.dirname(os.path.dirname(iteration_path))
 
