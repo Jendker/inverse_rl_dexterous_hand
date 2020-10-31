@@ -138,6 +138,46 @@ class Discriminator(Model):
         return reward, fitted_value, discrim_output
 
 
+class GeneralizingCheckpoint:
+    def __init__(self):
+        self.iteration_to_load = 0
+        self.iteration_save_freq = None
+        self.first_save_iteration = None
+        self.min_loss_considered_still_generalizing = 0.2
+        self.min_fitting_steps_to_not_load = 4
+        self.last_loaded_generalizing_checkpoint = None
+        self.last_loss = 0
+        self.iteration_path = None
+
+    def check_load_generalizing_checkpoint(self, fitting_iteration_number, outer_loop_iteration_number, airl_model):
+        if fitting_iteration_number < self.min_fitting_steps_to_not_load:
+            if self.last_loaded_generalizing_checkpoint is not None and self.last_loaded_generalizing_checkpoint >= self.iteration_to_load:
+                if self.iteration_save_freq is None:
+                    print("GeneralizingCheckpoint: Iteration save frequency not known yet. Could not backstep the "
+                          "generalizing checkpoint number")
+                else:
+                    if self.iteration_to_load - self.iteration_save_freq > 0:
+                        self.iteration_to_load -= self.iteration_save_freq
+                        print("GeneralizingCheckpoint: Backstep the generalizing checkpoint number to", str(self.iteration_to_load))
+            if self.iteration_path is not None and self.iteration_to_load > 0:
+                airl_model.load_iteration(self.iteration_path, self.iteration_to_load)
+                print('GeneralizingCheckpoint: Reward function does not generalize. Reloading previous generalizing '
+                      'checkpoint with iteration number', self.iteration_to_load)
+                self.last_loaded_generalizing_checkpoint = outer_loop_iteration_number
+
+    def new_checkpoint(self, iteration, iteration_path):
+        if self.iteration_save_freq is None:
+            if self.first_save_iteration is None:
+                self.first_save_iteration = iteration
+            else:
+                self.iteration_save_freq = iteration - self.first_save_iteration
+        if self.last_loss >= self.min_loss_considered_still_generalizing:
+            self.iteration_to_load = iteration
+        self.last_loss = 0
+        if self.iteration_path is None:
+            self.iteration_path = os.path.dirname(os.path.dirname(iteration_path))
+
+
 class AIRL(SingleTimestepIRL):
     """ 
     Args:
@@ -273,6 +313,7 @@ class AIRL(SingleTimestepIRL):
         else:
             self.adversarial_samples_generator = None
         self.use_timestamp = use_timestamp
+        self.generalizing_checkpoint = GeneralizingCheckpoint()
 
     def input_size(self):
         return self.discriminator.dO
@@ -387,8 +428,6 @@ class AIRL(SingleTimestepIRL):
             with tf.GradientTape() as tape:
                 discrim_output, log_p_tau, log_pq, log_q_tau = self.discriminator(inputs)
                 loss = self.discriminator.calculate_loss(log_p_tau, log_pq, log_q_tau, labels)
-            gradients = tape.gradient(loss, self.discriminator.trainable_variables)
-            self.optimizer.apply_gradients(zip(gradients, self.discriminator.trainable_variables))
 
             scalar_loss = loss.numpy()
             it.record('loss', scalar_loss)
@@ -401,7 +440,11 @@ class AIRL(SingleTimestepIRL):
                 print("\tBreaking discriminator training after", iteration_step, "steps")
                 if 'mean_loss' not in locals():
                     mean_loss = it.pop_mean('loss')
+                self.generalizing_checkpoint.check_load_generalizing_checkpoint(iteration_step, main_loop_step, self)
                 break
+            self.generalizing_checkpoint.last_loss = loss
+            gradients = tape.gradient(loss, self.discriminator.trainable_variables)
+            self.optimizer.apply_gradients(zip(gradients, self.discriminator.trainable_variables))
 
         if self.normalization:
             rewards = self.discriminator.update_normalization_from_rewards(act_t=acts, obs_t=obs,
@@ -489,6 +532,7 @@ class AIRL(SingleTimestepIRL):
             self.manager = tf.train.CheckpointManager(self.checkpoint, full_path, max_to_keep=3)
         self.discriminator.save_weights(os.path.join(path, 'discriminator_last'))
         self.discriminator.save_weights(os.path.join(path, 'discriminator', 'discriminator_weights_{}'.format(iteration)))
+        self.generalizing_checkpoint.new_checkpoint(iteration, path)
         self.manager.save()
 
     def load_checkpoint(self, path):
