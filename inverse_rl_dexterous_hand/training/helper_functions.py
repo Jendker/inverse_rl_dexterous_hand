@@ -42,11 +42,11 @@ def parse_task(cfg):
     env_name = cfg['env'] + '-v0'
     if cfg['env'] == 'pen':
         cfg['BC']['epochs'] = 1
-    if 'IRL' in cfg and  'visible_indices' in cfg['IRL'] and cfg['IRL']['visible_indices'] is not None:
+    if 'IRL' in cfg and 'visible_indices' in cfg['IRL'] and cfg['IRL']['visible_indices'] is not None and 'override_visible_indices' not in cfg['IRL']:
         if cfg['env'] == 'relocate':
             cfg['IRL']['visible_indices'] = 'slice(-9,None)'
         if cfg['env'] == 'hammer':
-            cfg['IRL']['visible_indices'] = 'slice(-19,None)'
+            cfg['IRL']['visible_indices'] = 'slice(-20,None)'
         if cfg['env'] == 'pen':
             cfg['IRL']['visible_indices'] = 'slice(-21,None)'
         if cfg['env'] == 'door':

@@ -53,7 +53,11 @@ class Discriminator(Model):
         self.fitted_value_fn = value_fn_arch(din=value_fn_input_size, dout=1, d_hidden=48)
         if isinstance(visible_indices, str) and visible_indices:
             evaluated = eval(visible_indices)
-            visible_indices = list(range(self.dO)[evaluated])
+            if isinstance(evaluated, tuple):
+                visible_indices = np.concatenate([range(self.dO)[x] for x in evaluated]).ravel().tolist()
+            else:
+                visible_indices = list(range(self.dO)[evaluated])
+            visible_indices = list(set(visible_indices))
             if alg_use_timestamp and isinstance(evaluated, slice):
                 if evaluated.stop is None:  # means goes to the end - we need to shift it by one, because end will be the appended index
                     for index, value in enumerate(visible_indices):
