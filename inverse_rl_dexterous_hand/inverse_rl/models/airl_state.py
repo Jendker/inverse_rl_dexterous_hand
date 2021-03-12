@@ -143,8 +143,8 @@ class GeneralizingCheckpoint:
         self.iteration_to_load = 0
         self.iteration_save_freq = None
         self.first_save_iteration = None
-        self.min_loss_considered_still_generalizing = 0.5
-        self.min_fitting_steps_to_not_load = 4
+        self.min_loss_considered_still_generalizing = 4.5
+        self.min_fitting_steps_to_not_load = 10
         self.last_loaded_generalizing_checkpoint = None
         self.last_loss = 0
         self.iteration_path = None
@@ -158,12 +158,14 @@ class GeneralizingCheckpoint:
                 self.last_loaded_generalizing_checkpoint = outer_loop_iteration_number
 
     def new_checkpoint(self, iteration, iteration_path):
+        print('saving checkpoint', iteration)
         if self.iteration_save_freq is None:
             if self.first_save_iteration is None:
                 self.first_save_iteration = iteration
             else:
                 self.iteration_save_freq = iteration - self.first_save_iteration
         if self.last_loss >= self.min_loss_considered_still_generalizing:
+            print('now saving iteration safe', iteration)
             self.iteration_to_load = iteration
         if self.iteration_path is None:
             self.iteration_path = os.path.dirname(os.path.dirname(iteration_path))
@@ -315,7 +317,7 @@ class AIRL(SingleTimestepIRL):
         elif isinstance(self.fusion, DiskFusionDistr):
             self.fusion.save_itr_paths(main_loop_step, paths)
 
-    def fit(self, paths, policy=None, batch_size=32, logger=None, lr=1e-3, minimal_loss=0.01, num_cpu='max',
+    def fit(self, paths, policy=None, batch_size=32, logger=None, lr=1e-3, minimal_loss=3.5, num_cpu='max',
             policy_updates_count=1, main_loop_step=None, main_loop_percentage=None, **kwargs):
         self.optimizer.lr.assign(lr)
         if self.augmentation is not None:
