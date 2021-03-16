@@ -2,7 +2,7 @@
 
 This code accompanies the paper "Inverse reinforcement learning for dexterous hand manipulation" to enable reproduction of the presented results.
 
-##Installation steps (Linux or MacOS):
+## Installation steps (Linux or MacOS):
 ### For mujoco-py:
 - Install mujoco libraries: https://www.roboti.us/index.html
 - `sudo apt install libglew-dev patchelf libosmesa6-dev`
