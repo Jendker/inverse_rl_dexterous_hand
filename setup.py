@@ -12,7 +12,7 @@ setuptools.setup(
     packages=setuptools.find_packages(),
     install_requires=[
         'tensorflow-cpu',
-        'torch<1.6.0',
+        'torch>=2.2.0',
         'gym',
         'mujoco-py<2.1,>=2.0',
         'click',
